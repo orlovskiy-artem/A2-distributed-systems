@@ -1,5 +1,7 @@
 package com.orlovsky.mooc_platform.service;
 
+import com.orlovsky.mooc_platform.dto.AuthorDTO;
+import com.orlovsky.mooc_platform.dto.StudentDTO;
 import com.orlovsky.mooc_platform.model.Student;
 import com.orlovsky.mooc_platform.model.Author;
 
@@ -7,9 +9,9 @@ import java.util.List;
 import java.util.UUID;
 
 public interface AccountService {
-    void signUpStudent(Student student);
+    void signUpStudent(StudentDTO studentDTO);
 
-    void signUpAuthor(Author author);
+    void signUpAuthor(AuthorDTO authorDTO);
 
     Student getStudentById(UUID studentId);
 
@@ -19,13 +21,13 @@ public interface AccountService {
 
     List<Author> getAllAuthors();
 
-    boolean updateStudent(UUID studentId,Student student);
+    void updateStudent(UUID studentId,StudentDTO studentDTO);
 
-    boolean updateAuthor(UUID authorId, Author author);
+    void updateAuthor(UUID authorId, AuthorDTO authorDTO);
 
-    boolean deleteStudent(UUID studentId);
+    void deleteStudentById(UUID studentId);
 
-    boolean deleteAuthor(UUID authorId);
+    void deleteAuthorById(UUID authorId);
 
 
 }

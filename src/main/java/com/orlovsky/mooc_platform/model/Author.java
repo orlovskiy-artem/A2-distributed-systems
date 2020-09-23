@@ -1,65 +1,32 @@
 package com.orlovsky.mooc_platform.model;
 
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Type;
+
+import javax.persistence.*;
 import java.util.UUID;
 
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Entity
+@Table(name = "authors")
 public class Author {
+    @Id
+    @Type(type = "pg-uuid")
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
+
+    @Column(name = "first_name")
     private String firstName;
+
+    @Column(name = "last_name")
     private String lastName;
+
+    @Column(name = "description")
     private String description;
-
-    public Author(UUID id,
-                  String firstName,
-                  String lastName,
-                  String description) {
-        this.id = id;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.description = description;
-    }
-
-
-    public UUID getId() {
-        return id;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getName() {
-        return this.getFirstName() + " " + this.getLastName();
-    }
-
-    @Override
-    public String toString() {
-        return "Author{" +
-                "platformId=" + id +
-                ", firstName='" + firstName + '\'' +
-                ", lastName='" + lastName + '\'' +
-                ", description='" + description + '\'' +
-                '}';
-    }
-
-
 }
+

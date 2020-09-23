@@ -1,5 +1,9 @@
 package com.orlovsky.mooc_platform.controller;
 
+import com.orlovsky.mooc_platform.dto.AuthorDTO;
+import com.orlovsky.mooc_platform.dto.StudentDTO;
+import com.orlovsky.mooc_platform.mapper.AuthorMapper;
+import com.orlovsky.mooc_platform.mapper.StudentMapper;
 import com.orlovsky.mooc_platform.model.Author;
 import com.orlovsky.mooc_platform.model.Student;
 import com.orlovsky.mooc_platform.service.AccountService;
@@ -9,96 +13,96 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.MissingResourceException;
 import java.util.UUID;
 
 @RestController
 public class AccountController {
-    private final AccountService accountService;
 
     @Autowired
-    public AccountController(AccountService accountService){
-        this.accountService = accountService;
-    }
+    private AccountService accountService;
 
+    // CRUD for students
     @PostMapping(value = "/students")
-    public ResponseEntity<?> createStudent(@RequestBody Student student){
-        accountService.signUpStudent(student);
+    public ResponseEntity<?> createStudent(@RequestBody StudentDTO body){
+        accountService.signUpStudent(body);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @GetMapping(value = "/students")
-    public ResponseEntity<?> readStudends(){
-        final List<Student> students = accountService.getAllStudents();
-
-        return students != null && !students.isEmpty()
-                ?  new ResponseEntity<>(students,HttpStatus.OK)
-                :  new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    public ResponseEntity<?> getAllStudents(){
+       List<StudentDTO> studentDTOs = StudentMapper.INSTANCE.
+               toDtos(accountService.getAllStudents());
+        return new ResponseEntity<>(studentDTOs,HttpStatus.OK);
     }
 
     @GetMapping(value = "/students/{id}")
-    public ResponseEntity<?> readStudent(@PathVariable(name = "id") UUID id){
-        final Student student = accountService.getStudentById(id);
-        return student != null
-                ? new ResponseEntity<>(student,HttpStatus.OK)
-                : new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    public ResponseEntity<?> getStudentById(@PathVariable(name = "id") UUID id){
+        try{
+           Student student = accountService.getStudentById(id);
+           StudentDTO body = StudentMapper.INSTANCE.toDto(student);
+           return new ResponseEntity<>(body, HttpStatus.OK);
+        } catch (MissingResourceException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     @PutMapping(value = "/students/{id}")
-    public ResponseEntity<?> updateStudent(@PathVariable(name = "id") UUID id,
-                                           @RequestBody Student student){
-        final boolean updated = accountService.updateStudent(id,student);
-        return updated
-                ? new ResponseEntity<>(HttpStatus.OK)
-                : new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
+    public ResponseEntity<?> updateStudentById(@PathVariable(name = "id") UUID id,
+                                               @RequestBody StudentDTO body) {
+        try{
+            accountService.updateStudent(id,body);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (MissingResourceException e){
+            return new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
+        }
     }
 
     @DeleteMapping(value = "/students/{id}")
-    public ResponseEntity<?> deleteStudent(@PathVariable(name = "id") UUID id){
-        final boolean deleted = accountService.deleteStudent(id);
-        return deleted
-                ? new ResponseEntity<>(HttpStatus.OK)
-                : new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
+    public ResponseEntity<?> deleteStudentById(@PathVariable(name = "id") UUID id){
+        accountService.deleteStudentById(id);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
-
+    // CRUD for authors
     @PostMapping(value = "/authors")
-    public ResponseEntity<?> createAuthor(@RequestBody Author author){
-        accountService.signUpAuthor(author);
+    public ResponseEntity<?> createAuthor(@RequestBody AuthorDTO body){
+        accountService.signUpAuthor(body);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @GetMapping(value = "/authors")
-    public ResponseEntity<?> readAuthors(){
-        final List<Author> authors = accountService.getAllAuthors();
-
-        return authors != null && !authors.isEmpty()
-                ?  new ResponseEntity<>(authors,HttpStatus.OK)
-                :  new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    public ResponseEntity<?> getAllAuthors(){
+        List<AuthorDTO> authorDTOs = AuthorMapper.INSTANCE.
+                toDtos(accountService.getAllAuthors());
+        return new ResponseEntity<>(authorDTOs,HttpStatus.OK);
     }
 
     @GetMapping(value = "/authors/{id}")
-    public ResponseEntity<?> readAuthor(@PathVariable(name = "id") UUID id){
-        final Author author = accountService.getAuthorById(id);
-        return author != null
-                ? new ResponseEntity<>(author,HttpStatus.OK)
-                : new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    public ResponseEntity<?> getAuthorById(@PathVariable(name = "id") UUID id){
+        try{
+            Author author = accountService.getAuthorById(id);
+            AuthorDTO body = AuthorMapper.INSTANCE.toDto(author);
+            return new ResponseEntity<>(body, HttpStatus.OK);
+        } catch (MissingResourceException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     @PutMapping(value = "/authors/{id}")
     public ResponseEntity<?> updateAuthor(@PathVariable(name = "id") UUID id,
-                                           @RequestBody Author author){
-
-        final boolean updated = accountService.updateAuthor(id,author);
-        return updated
-                ? new ResponseEntity<>(HttpStatus.OK)
-                : new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
+                                           @RequestBody AuthorDTO body){
+        try{
+            accountService.updateAuthor(id,body);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (MissingResourceException e){
+            return new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
+        }
     }
 
     @DeleteMapping(value = "/authors/{id}")
-    public ResponseEntity<?> deleteAuthor(@PathVariable(name = "id") UUID id){
-        final boolean deleted = accountService.deleteAuthor(id);
-        return deleted
-                ? new ResponseEntity<>(HttpStatus.OK)
-                : new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
+    public ResponseEntity<?> deleteAuthorById(@PathVariable(name = "id") UUID id){
+        accountService.deleteAuthorById(id);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }
