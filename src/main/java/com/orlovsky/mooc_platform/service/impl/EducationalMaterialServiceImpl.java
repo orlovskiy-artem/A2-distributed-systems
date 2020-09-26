@@ -1,152 +1,286 @@
 package com.orlovsky.mooc_platform.service.impl;
 
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.orlovsky.mooc_platform.dto.CourseDTO;
+import com.orlovsky.mooc_platform.dto.EducationalStepDTO;
+import com.orlovsky.mooc_platform.dto.TestStepDTO;
+import com.orlovsky.mooc_platform.mapper.CourseMapper;
+import com.orlovsky.mooc_platform.mapper.EducationalStepMapper;
+import com.orlovsky.mooc_platform.mapper.TestStepMapper;
 import com.orlovsky.mooc_platform.model.*;
+import com.orlovsky.mooc_platform.repository.*;
 import com.orlovsky.mooc_platform.service.EducationalMaterialService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.net.URI;
-import java.time.Duration;
-import java.util.*;
+import java.util.List;
+import java.util.MissingResourceException;
+import java.util.UUID;
 
 @Service
 public class EducationalMaterialServiceImpl implements EducationalMaterialService {
-    private final Map<UUID, Course> coursesStorage = new HashMap<>();
-    private final Map<UUID, EducationalStep> educationalStepStorage = new HashMap<>();
-    private final Map<UUID, TestStep> testStepStorage = new HashMap<>();
+    @Autowired
+    private CourseRepository courseRepository;
+    @Autowired
+    private EducationalStepRepository educationalStepRepository;
+    @Autowired
+    private TestStepRepository testStepRepository;
+    @Autowired
+    private AuthorRepository authorRepository;
+    @Autowired
+    private TestAnswerRepository testAnswerRepository;
 
-    private final ObjectIdGenerators.UUIDGenerator coursesHolder = new ObjectIdGenerators.UUIDGenerator();
-    private final ObjectIdGenerators.UUIDGenerator educationalStepHolder = new ObjectIdGenerators.UUIDGenerator();
-    private final ObjectIdGenerators.UUIDGenerator testStepHolder = new ObjectIdGenerators.UUIDGenerator();
+//    @Autowired
+//    private  authorRepository;
 
     // CRUD
     // Create
     @Override
-    public void createEmptyCourse(String title,
-                                  String description,
-                                  Collection<Author> authors,
-                                  Duration duration,
-                                  long price) {
-        ArrayList<Step> steps = new ArrayList<>();
-        UUID id = UUID.randomUUID();
-        Course course = new Course(id,
-                title,
-                description,
-                authors,
-                duration,
-                CourseStatus.IN_DEVELOPMENT,
-                steps,
-                price);
-        coursesStorage.put(id, course);
+    public void createEmptyCourse(CourseDTO courseDTO) {
+        Course course = CourseMapper.INSTANCE.toEntity(courseDTO);
+        course.setStatus(CourseStatus.IN_DEVELOPMENT);
+        courseRepository.save(course);
     }
-
 
     // Read
     @Override
-    public Course getCourse(UUID courseId) {
-        if(coursesStorage.containsKey(courseId)){
-            return coursesStorage.get(courseId);
-        } else
-            throw new MissingResourceException("Course not found",
-                    "Course",courseId.toString());
+    public Course getCourseById(UUID courseId) throws MissingResourceException{
+        return courseRepository.findById(courseId)
+                .orElseThrow(() ->
+                        new MissingResourceException("Course not found",
+                                "Course",courseId.toString()));
+    }
+
+    @Override
+    public TestStep getTestStepById(UUID testStepId) throws MissingResourceException {
+        return testStepRepository.findById(testStepId)
+                .orElseThrow(()->
+                    new MissingResourceException("Test step not found",
+                            "TestStep",
+                            testStepId.toString()));
+    }
+
+    @Override
+    public EducationalStep getEducationalStepById(UUID educationalStepId) throws MissingResourceException {
+        return educationalStepRepository.findById(educationalStepId)
+                .orElseThrow(() ->
+                        new MissingResourceException("Educational step not found",
+                                "EducationalStep",
+                                educationalStepId.toString()));
     }
 
     @Override
     public List<Course> getAllCourses() {
-        return new ArrayList<>(coursesStorage.values());
-    }
-
-    @Override
-    public TestStep getTestStep(UUID testStepId) {
-        return testStepStorage.get(testStepId);
-    }
-
-    @Override
-    public void updateCourseInfo(UUID courseId,
-                                 String title,
-                                 String description,
-                                 Collection<Author> authors,
-                                 Duration duration, long price) {
-        if(coursesStorage.containsKey(courseId)){
-            Course course = coursesStorage.get(courseId);
-            course.setTitle(title);
-            course.setDescription(description);
-            course.setAuthors(authors);
-            course.setDuration(duration);
-            course.setPrice(price);
-        } else
-            throw new MissingResourceException("Course not found",
-                    "Course",courseId.toString());
+        return courseRepository.findAll();
     }
 
 
     // Update
     @Override
-    public void activateCourse(UUID courseId) {
-        Course course = coursesStorage.get(courseId);
+    public void updateCourseInfo(UUID courseId,CourseDTO courseDTO) throws MissingResourceException{
+        if(!courseRepository.existsById(courseId)){
+            throw new MissingResourceException("Course not found",
+                    "Course",
+                    courseId.toString());
+        }
+        Course course = courseRepository.getOne(courseId);
+        course.setTitle(courseDTO.getTitle());
+        course.setPrice(courseDTO.getPrice());
+        course.setDuration(courseDTO.getDuration());
+        course.setDescription(courseDTO.getDescription());
+        if(courseDTO.getStatus()!=null){
+            course.setStatus(courseDTO.getStatus());
+        }
+        courseRepository.save(course);
+    }
+
+    @Override
+    public void activateCourse(UUID courseId) throws MissingResourceException {
+        if(!courseRepository.existsById(courseId)){
+            throw new MissingResourceException("Course not found",
+                    "Course",
+                    courseId.toString());
+        }
+        Course course = courseRepository.getOne(courseId);
         course.setStatus(CourseStatus.ACTIVE);
-        System.out.println(course.getTitle() + " course is activated");
+        courseRepository.save(course);
     }
 
     @Override
-    public void deactivateCourse(UUID courseId) {
-        Course course = coursesStorage.get(courseId);
+    public void deactivateCourse(UUID courseId) throws MissingResourceException {
+        if(!courseRepository.existsById(courseId)){
+            throw new MissingResourceException("Course not found",
+                    "Course",
+                    courseId.toString());
+        }
+        Course course = courseRepository.getOne(courseId);
         course.setStatus(CourseStatus.DEPRECATED);
-        System.out.println(course.getTitle() + " course is deprecated");
+        courseRepository.save(course);
     }
 
     @Override
-    public void addEducationalStep(UUID courseId,
-                                   URI educationalMaterialUri) {
-        Course course = coursesStorage.get(courseId);
-        UUID stepId = UUID.randomUUID();
-        EducationalStep educationalStep = new EducationalStep(
-                stepId,
-                courseId,
-                educationalMaterialUri);
-        course.getSteps().add(educationalStep);
-        educationalStepStorage.put(educationalStep.getId(), educationalStep);
+    public void setCourseStatus(UUID courseId, CourseStatus courseStatus) throws MissingResourceException {
+        if(!courseRepository.existsById(courseId)){
+            throw new MissingResourceException("Course not found",
+                    "Course",
+                    courseId.toString());
+        }
+        Course course = courseRepository.getOne(courseId);
+        course.setStatus(courseStatus);
+    }
+
+    @Override
+    public void addEducationalStep(UUID courseId, EducationalStepDTO educationalStepDTO) {
+        if(!courseRepository.existsById(courseId)){
+            throw new MissingResourceException("Course not found",
+                    "Course",
+                    courseId.toString());
+        }
+        Course course = courseRepository.getOne(courseId);
+        int numberOfSteps = course.getNumberOfSteps();
+        EducationalStep educationalStep = EducationalStepMapper.INSTANCE.toEntity(educationalStepDTO);
+        educationalStep.setPosition(numberOfSteps+1);
+        educationalStep.setCourse(course);
+        educationalStepRepository.save(educationalStep);
+        course.setNumberOfSteps(course.getNumberOfSteps()+1);
+        course.getEducationalSteps().add(educationalStep);
+        courseRepository.save(course);
     }
 
     @Override
     public void addTestStep(UUID courseId,
-                            URI descriptionUri,
-                            Collection<TestAnswer> answers,
-                            TestAnswer correctAnswer,
-                            int score) {
-        Course course = coursesStorage.get(courseId);
-        UUID stepId = UUID.randomUUID();
-        TestStep testStep = new TestStep(
-                stepId,
-                course.getId(),
-                descriptionUri,
-                answers,
-                correctAnswer,
-                score);
-        course.getSteps().add(testStep);
-        testStepStorage.put(testStep.getId(), testStep);
+                            TestStepDTO testStepDTO) {
+        if(!courseRepository.existsById(courseId)){
+            throw new MissingResourceException("Course not found",
+                    "Course",
+                    courseId.toString());
+        }
+        Course course = courseRepository.getOne(courseId);
+        int numberOfSteps = course.getNumberOfSteps();
+        TestStep testStep = TestStepMapper.INSTANCE.toEntity(testStepDTO);
+        testStep.setPosition(numberOfSteps+1);
+        testStep.setCourse(course);
+        TestStep testStepSaved = testStepRepository.save(testStep);
+        course.setNumberOfSteps(course.getNumberOfSteps()+1);
+        course.getTestSteps().add(testStepSaved);
+        courseRepository.save(course);
     }
 
     @Override
-    public void deleteTestStep(UUID courseId,
-                               TestStep testStep) {
-        Course course = coursesStorage.get(courseId);
-        course.getSteps().remove(testStep);
-        testStepStorage.remove(testStep.getId());
+    public void addTestStepAnswer(UUID courseId,
+                                  UUID testStepId,
+                                  TestAnswer testAnswer) throws MissingResourceException{
+        if(!testStepRepository.existsById(testStepId)){
+            throw new MissingResourceException("Test step not found",
+                    "Test step",
+                    testStepId.toString());
+        }
+        TestStep testStep = testStepRepository.getOne(testStepId);
+        testAnswer.setTestStep(testStep);
+        testStep.getAnswers().add(testAnswer);
+        testAnswerRepository.save(testAnswer);
+        testStepRepository.save(testStep);
     }
 
-
     @Override
-    public void deleteCourse(UUID courseId) {
-        Course course = coursesStorage.remove(courseId);
+    public void addAuthor(UUID courseId, UUID authorId) {
+        if(!courseRepository.existsById(courseId)){
+            throw new MissingResourceException("Course not found",
+                    "Course",
+                    courseId.toString());
+        }
+        // Will be done by responses in Lab A3 - microservices
+        if(!authorRepository.existsById(authorId)){
+            throw new MissingResourceException("Author not found",
+                    "Author",
+                    authorId.toString());
+        }
+        Course course = courseRepository.getOne(courseId);
+        Author author = authorRepository.getOne(authorId);
+        course.getAuthors().add(author);
+        courseRepository.save(course);
     }
 
     // Delete
     @Override
+    public void deleteCourse(UUID courseId) {
+        courseRepository.deleteById(courseId);
+    }
+
+    @Override
+    public void deleteTestStep(UUID courseId,
+                               UUID testStepId) throws MissingResourceException{
+        if(!courseRepository.existsById(courseId)){
+            throw new MissingResourceException("Course not found",
+                    "Course",
+                    courseId.toString());
+        }
+        if(!testStepRepository.existsById(testStepId)){
+            return;
+        }
+        Course course = courseRepository.getOne(courseId);
+        TestStep testStep = testStepRepository.getOne(testStepId);
+        course.getTestSteps().remove(testStep);
+        course.setNumberOfSteps(course.getNumberOfSteps()-1);
+        courseRepository.save(course);
+        testStepRepository.deleteById(testStepId);
+    }
+
+    @Override
+    public void deleteTestAnswer(UUID testStepId, UUID testAnswerId)
+            throws MissingResourceException {
+        if(!testStepRepository.existsById(testStepId)){
+            throw new MissingResourceException("Test step not found",
+                    "TestStep",
+                    testStepId.toString());
+        }
+        if(!testAnswerRepository.existsById(testAnswerId)){
+            throw new MissingResourceException("Test answer not found",
+                    "TestAnswer",
+                    testAnswerId.toString());
+        }
+        TestStep testStep = testStepRepository.getOne(testStepId);
+        TestAnswer testAnswer = testAnswerRepository.getOne(testAnswerId);
+        testStep.getAnswers().remove(testAnswer);
+        testAnswerRepository.delete(testAnswer);
+    }
+
+    @Override
+    public void deleteAuthorById(UUID courseId, UUID authorId) throws MissingResourceException {
+        if(!courseRepository.existsById(courseId)){
+            throw new MissingResourceException("Course not found",
+                    "Course",
+                    courseId.toString());
+        }
+        if(!authorRepository.existsById(authorId)){
+            throw new MissingResourceException("Author not found",
+                    "Author",
+                    authorId.toString());
+        }
+        Course course = courseRepository.getOne(courseId);
+        Author author = authorRepository.getOne(authorId);
+        course.getAuthors().remove(author);
+        authorRepository.deleteById(authorId);
+        courseRepository.save(course);
+    }
+
+    @Override
     public void deleteEducationalStep(UUID courseId,
-                                      EducationalStep educationalStep) {
-        Course course = coursesStorage.get(courseId);
-        course.getSteps().remove(educationalStep);
-        educationalStepStorage.remove(educationalStep.getId());
+                                      UUID educationalStepId) throws MissingResourceException {
+        if(!courseRepository.existsById(courseId)){
+            throw new MissingResourceException("Course not found",
+                    "Course",
+                    courseId.toString());
+        }
+        if(!educationalStepRepository.existsById(educationalStepId)){
+            return;
+        }
+        Course course = courseRepository.getOne(courseId);
+        EducationalStep educationalStep = educationalStepRepository.getOne(educationalStepId);
+        course.getTestSteps().remove(educationalStep);
+        course.setNumberOfSteps(course.getNumberOfSteps()-1);
+        courseRepository.save(course);
+        educationalStepRepository.deleteById(educationalStepId);
+
+
     }
 }

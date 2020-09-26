@@ -1,58 +1,62 @@
 package com.orlovsky.mooc_platform.service;
 
 
+import com.orlovsky.mooc_platform.dto.CourseDTO;
+import com.orlovsky.mooc_platform.dto.EducationalStepDTO;
+import com.orlovsky.mooc_platform.dto.TestStepDTO;
 import com.orlovsky.mooc_platform.model.*;
 
 import java.net.URI;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.List;
+import java.util.MissingResourceException;
 import java.util.UUID;
 
 public interface EducationalMaterialService {
     // CRUD
     // Create
-    void createEmptyCourse(String title,
-                           String description,
-                           Collection<Author> authors,
-                           Duration duration,
-                           long price);
+    void createEmptyCourse(CourseDTO courseDTO);
+
     // Read
-    Course getCourse(UUID courseId);
+    Course getCourseById(UUID courseId);
 
     List<Course> getAllCourses();
 
-    TestStep getTestStep(UUID testStepId);
+    TestStep getTestStepById(UUID testStepId);
+
+    EducationalStep getEducationalStepById(UUID educationalStepId) throws MissingResourceException;
 
     // Update
     void updateCourseInfo(UUID courseId,
-                          String title,
-                          String description,
-                          Collection<Author> authors,
-                          Duration duration,
-                          long price);
+                          CourseDTO courseDTO);
+
+    void addAuthor(UUID courseId, UUID authorId);
 
     void addEducationalStep(UUID courseId,
-                            URI educationalMaterialUri);
+                            EducationalStepDTO educationalStepDTO);
 
     void addTestStep(UUID courseId,
-                     URI descriptionUri,
-                     Collection<TestAnswer> answers,
-                     TestAnswer correctAnswer,
-                     int score);
+                     TestStepDTO testStepDTO);
 
-    // if it is necessary to edit the course
-    void deleteEducationalStep(UUID courseId,
-                               EducationalStep educationalStep);
+    void addTestStepAnswer(UUID courseId, UUID testStepId, TestAnswer body);
 
-    void deleteTestStep(UUID courseId,
-                        TestStep testStep);
+    void setCourseStatus(UUID courseId, CourseStatus courseStatus);
 
     void activateCourse(UUID courseId);
 
     void deactivateCourse(UUID courseId);
 
+    // Delete
+    void deleteEducationalStep(UUID courseId,
+                               UUID educationalStepId);
+
+    void deleteTestStep(UUID courseId,
+                        UUID testStepId);
+
+    void deleteTestAnswer(UUID testStepId, UUID testAnswerId);
+
+    void deleteAuthorById(UUID courseId, UUID authorId);
+
     void deleteCourse(UUID courseId);
-
-
 }

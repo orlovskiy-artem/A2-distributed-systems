@@ -1,54 +1,41 @@
 package com.orlovsky.mooc_platform.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Type;
+
+import javax.persistence.*;
 import java.net.URI;
 import java.util.Collection;
 import java.util.UUID;
 
-
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Entity
+@Table(name = "test_steps")
 public class TestStep implements Step {
-    private final UUID id;
-    private final UUID courseId;
-    private final URI descriptionUri;
-    private final Collection<TestAnswer> answers;
-    private final TestAnswer correctAnswer;
-    private final int score;
+    @Id
+    @Type(type = "pg-uuid")
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private UUID id;
 
-    public TestStep(UUID id,
-                    UUID courseId,
-                    URI descriptionUri,
-                    Collection<TestAnswer> answers,
-                    TestAnswer correctAnswer,
-                    int score) {
-        this.id = id;
-        this.courseId = courseId;
-        this.descriptionUri = descriptionUri;
-        this.answers = answers;
-        this.correctAnswer = correctAnswer;
-        this.score = score;
-    }
+    @JsonBackReference
+    @ManyToOne
+    @JoinColumn(name = "course_id")
+    private Course course;
 
-    public UUID getId() {
-        return id;
-    }
+    @Column
+    private URI descriptionUri;
 
-    public UUID getCourseId() {
-        return courseId;
-    }
+    @OneToMany(mappedBy = "testStep",cascade = CascadeType.ALL)
+    private Collection<TestAnswer> answers;
 
-    public URI getDescriptionUri() {
-        return descriptionUri;
-    }
+    @Column
+    private int score;
 
-    public Collection<TestAnswer> getAnswers() {
-        return answers;
-    }
-
-    public TestAnswer getCorrectAnswer() {
-        return correctAnswer;
-    }
-
-    public int getScore() {
-        return score;
-    }
-
+    @Column
+    private int position;
 }

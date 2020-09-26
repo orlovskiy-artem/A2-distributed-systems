@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.time.ZonedDateTime;
 import java.util.*;
 
+// Will be implemented in next commit
 @Service
 public class CourseProgressServiceImpl implements CourseProgressService {
     // this format for next line: Map<CourseId, Set<StudentId>>
@@ -77,7 +78,7 @@ public class CourseProgressServiceImpl implements CourseProgressService {
                                       UUID studentId,
                                       UUID testStepId,
                                       TestAnswer chosenTestAnswer) {
-        TestStep testStep = educationalMaterialService.getTestStep(testStepId);
+        TestStep testStep = educationalMaterialService.getTestStepById(testStepId);
         Map<UUID, List<UUID>> studentProgress = progressStorage.get(studentId);
         ActionType receivedActionType = autoCheckService.checkTestTask(testStep, chosenTestAnswer);
         CourseAction courseAction = buildCourseAction(courseId, studentId, receivedActionType, testStep.getScore());
@@ -90,15 +91,8 @@ public class CourseProgressServiceImpl implements CourseProgressService {
     @Override
     public Step getCurrentStep(UUID courseId,
                                UUID studentId) {
-        Map<UUID, List<UUID>> studentProgress = progressStorage.get(studentId);
-        List<UUID> studentsCourseSteps = studentProgress.get(courseId);
-        Course course = educationalMaterialService.getCourse(courseId);
-        if (studentsCourseSteps.size() == course.getSteps().size()) {
-            Student student = accountService.getStudentById(studentId);
-            congratulateStudent(student, course);
-            return course.getSteps().get(studentsCourseSteps.size() - 1);
-        }
-        return course.getSteps().get(studentsCourseSteps.size()); // next step from last finished
+//        Will be implemented in next commit
+        return null;
     }
 
     @Override

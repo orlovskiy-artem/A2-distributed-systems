@@ -1,12 +1,14 @@
 package com.orlovsky.mooc_platform.model;
 
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -28,5 +30,9 @@ public class Author {
 
     @Column(name = "description")
     private String description;
+
+    @JsonBackReference
+    @ManyToMany(mappedBy = "authors")
+    private List<Course> courses;
 }
 

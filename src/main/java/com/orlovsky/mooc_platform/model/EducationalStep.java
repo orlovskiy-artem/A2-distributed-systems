@@ -1,33 +1,35 @@
 package com.orlovsky.mooc_platform.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Type;
+
+import javax.persistence.*;
 import java.net.URI;
 import java.util.UUID;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
+@Table(name = "educational_steps")
 public class EducationalStep implements Step {
-    private final UUID id;
-    private final UUID courseId;
-    private final URI eduMaterialUri;
+    @Id
+    @Type(type = "pg-uuid")
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private UUID id;
 
-    public EducationalStep(UUID id,
-                           UUID courseId,
-                           URI eduMaterialUri) {
-        this.id = id;
-        this.courseId = courseId;
-        this.eduMaterialUri = eduMaterialUri;
-    }
+    @JsonBackReference
+    @ManyToOne
+    @JoinColumn(name = "course_id")
+    private Course course;
 
-    public UUID getId() {
-        return id;
-    }
+    @Column
+    private URI eduMaterialUri;
 
-    // can be necessary to view course if ,for example, open link with step id will be shared to non-course member
-    public UUID getCourseId() {
-        return courseId;
-    }
-
-    // getter for educational material of this step
-    public URI getEduMaterialUri() {
-        return eduMaterialUri;
-    }
-
+    @Column
+    private int position;
 }
+
