@@ -14,7 +14,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Entity
 @Table(name = "test_answers")
-public class TestAnswer {
+public class TestStepOption {
     @Id
     @Column(name = "id",updatable = false, nullable = false)
     @GeneratedValue(generator = "UUID")
@@ -22,7 +22,7 @@ public class TestAnswer {
     private UUID id;
 
     @Column
-    private String answerText;
+    private String optionText;
 
     @Column
     private boolean isCorrect;

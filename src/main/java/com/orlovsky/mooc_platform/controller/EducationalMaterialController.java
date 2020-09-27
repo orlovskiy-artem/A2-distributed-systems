@@ -1,9 +1,7 @@
 package com.orlovsky.mooc_platform.controller;
 
 
-import com.orlovsky.mooc_platform.dto.CourseDTO;
-import com.orlovsky.mooc_platform.dto.EducationalStepDTO;
-import com.orlovsky.mooc_platform.dto.TestStepDTO;
+import com.orlovsky.mooc_platform.dto.*;
 import com.orlovsky.mooc_platform.mapper.CourseMapper;
 import com.orlovsky.mooc_platform.model.*;
 import com.orlovsky.mooc_platform.service.EducationalMaterialService;
@@ -26,7 +24,7 @@ public class EducationalMaterialController {
 
     // CRUD
     // Create
-    @PostMapping("/")
+    @PostMapping
     public ResponseEntity<?> createCourse(@RequestBody CourseDTO body){
         educationalMaterialService.createEmptyCourse(body);
         return new ResponseEntity<>(HttpStatus.CREATED);
@@ -44,7 +42,7 @@ public class EducationalMaterialController {
         }
     }
 
-    @GetMapping("/")
+    @GetMapping
     public ResponseEntity<?> getAllCourses(){
         List<Course> courses = educationalMaterialService.getAllCourses();
         return new ResponseEntity<>(courses,HttpStatus.OK);
@@ -131,7 +129,7 @@ public class EducationalMaterialController {
     @PostMapping(value = "/{courseId}/steps/test-steps/{testStepId}/answers")
     public ResponseEntity<?> addTestStepAnswer(@PathVariable(name = "courseId") UUID courseId,
                                                @PathVariable(name = "testStepId") UUID testStepId,
-                                               @RequestBody TestAnswer body){
+                                               @RequestBody TestStepOptionRequestDTO body){
         try{
             educationalMaterialService.addTestStepAnswer(courseId, testStepId, body);
             return new ResponseEntity<>(HttpStatus.OK);

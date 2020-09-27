@@ -1,7 +1,9 @@
 package com.orlovsky.mooc_platform.dto;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.orlovsky.mooc_platform.model.*;
+import com.orlovsky.mooc_platform.model.Author;
+import com.orlovsky.mooc_platform.model.CourseStatus;
+import com.orlovsky.mooc_platform.model.EducationalStep;
+import com.orlovsky.mooc_platform.model.TestStep;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

@@ -1,11 +1,7 @@
 package com.orlovsky.mooc_platform.service.impl;
 
-import com.orlovsky.mooc_platform.dto.CourseDTO;
-import com.orlovsky.mooc_platform.dto.EducationalStepDTO;
-import com.orlovsky.mooc_platform.dto.TestStepDTO;
-import com.orlovsky.mooc_platform.mapper.CourseMapper;
-import com.orlovsky.mooc_platform.mapper.EducationalStepMapper;
-import com.orlovsky.mooc_platform.mapper.TestStepMapper;
+import com.orlovsky.mooc_platform.dto.*;
+import com.orlovsky.mooc_platform.mapper.*;
 import com.orlovsky.mooc_platform.model.*;
 import com.orlovsky.mooc_platform.repository.*;
 import com.orlovsky.mooc_platform.service.EducationalMaterialService;
@@ -27,7 +23,7 @@ public class EducationalMaterialServiceImpl implements EducationalMaterialServic
     @Autowired
     private AuthorRepository authorRepository;
     @Autowired
-    private TestAnswerRepository testAnswerRepository;
+    private TestStepOptionRepository testAnswerRepository;
 
 //    @Autowired
 //    private  authorRepository;
@@ -38,6 +34,7 @@ public class EducationalMaterialServiceImpl implements EducationalMaterialServic
     public void createEmptyCourse(CourseDTO courseDTO) {
         Course course = CourseMapper.INSTANCE.toEntity(courseDTO);
         course.setStatus(CourseStatus.IN_DEVELOPMENT);
+        System.out.println(course);
         courseRepository.save(course);
     }
 
@@ -164,20 +161,20 @@ public class EducationalMaterialServiceImpl implements EducationalMaterialServic
         course.getTestSteps().add(testStepSaved);
         courseRepository.save(course);
     }
-
     @Override
     public void addTestStepAnswer(UUID courseId,
                                   UUID testStepId,
-                                  TestAnswer testAnswer) throws MissingResourceException{
+                                  TestStepOptionRequestDTO testStepOptionRequestDTO) throws MissingResourceException{
         if(!testStepRepository.existsById(testStepId)){
             throw new MissingResourceException("Test step not found",
                     "Test step",
                     testStepId.toString());
         }
         TestStep testStep = testStepRepository.getOne(testStepId);
-        testAnswer.setTestStep(testStep);
-        testStep.getAnswers().add(testAnswer);
-        testAnswerRepository.save(testAnswer);
+        TestStepOption testStepOption = TestStepOptionRequestMapper.INSTANCE.toEntity(testStepOptionRequestDTO);
+        testStepOption.setTestStep(testStep);
+        testStep.getAnswers().add(testStepOption);
+        testAnswerRepository.save(testStepOption);
         testStepRepository.save(testStep);
     }
 
@@ -239,7 +236,7 @@ public class EducationalMaterialServiceImpl implements EducationalMaterialServic
                     testAnswerId.toString());
         }
         TestStep testStep = testStepRepository.getOne(testStepId);
-        TestAnswer testAnswer = testAnswerRepository.getOne(testAnswerId);
+        TestStepOption testAnswer = testAnswerRepository.getOne(testAnswerId);
         testStep.getAnswers().remove(testAnswer);
         testAnswerRepository.delete(testAnswer);
     }

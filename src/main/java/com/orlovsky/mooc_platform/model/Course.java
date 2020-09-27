@@ -33,6 +33,13 @@ public class Course {
             inverseJoinColumns = {@JoinColumn(name="author_id",referencedColumnName="id")})
     List<Author> authors = new ArrayList<>();
 
+    @ManyToMany(cascade = CascadeType.PERSIST)
+    @JoinTable(
+            name="Course_Student",
+            joinColumns = {@JoinColumn(name="сourse_id",referencedColumnName="id")},
+            inverseJoinColumns = {@JoinColumn(name="student_id",referencedColumnName="id")})
+    List<Student> students = new ArrayList<>();
+
     @Column(name = "duration")
     private int duration;
 

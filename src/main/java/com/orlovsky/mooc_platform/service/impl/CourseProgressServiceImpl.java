@@ -1,98 +1,137 @@
 package com.orlovsky.mooc_platform.service.impl;
 
 
+import com.orlovsky.mooc_platform.dto.TestStepOptionDTO;
 import com.orlovsky.mooc_platform.model.*;
-import com.orlovsky.mooc_platform.service.AccountService;
+import com.orlovsky.mooc_platform.repository.*;
 import com.orlovsky.mooc_platform.service.AutoCheckService;
 import com.orlovsky.mooc_platform.service.CourseProgressService;
-import com.orlovsky.mooc_platform.service.EducationalMaterialService;
+import com.orlovsky.mooc_platform.service.PaymentService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.MissingResourceException;
+import java.util.UUID;
 
-// Will be implemented in next commit
 @Service
 public class CourseProgressServiceImpl implements CourseProgressService {
-    // this format for next line: Map<CourseId, Set<StudentId>>
-    private final Map<UUID, Set<UUID>> registrationStorage = new LinkedHashMap<>();
-    // this format for next line: Map<StudentId, Map<CourseId,List<StepId>>>
-    private final Map<UUID, Map<UUID, List<UUID>>> progressStorage = new HashMap<>();
-    // will be used for analytics
-    private final List<CourseAction> timedActionsStorage = new LinkedList<>();
+    @Autowired
+    private CourseRepository courseRepository;
 
-    // will be deleted in REST API step?
+    @Autowired
+    private StudentRepository studentRepository;
+
+    @Autowired
+    private EducationalStepRepository educationalStepRepository;
+
+    @Autowired
+    private TestStepRepository testStepRepository;
+
+    @Autowired
+    private  TestStepOptionRepository testStepOptionRepository;
+
+    @Autowired
+    private StudentProgressItemRepository studentProgressItemRepository;
+
+    @Autowired
     private AutoCheckService autoCheckService;
-    private EducationalMaterialService educationalMaterialService;
-    private AccountService accountService;
 
+    @Autowired
+    private PaymentService paymentService;
 
     @Override
     public void signUpUser(UUID courseId,
-                           UUID studentId) {
-        Set<UUID> studentsIds = registrationStorage.computeIfAbsent(courseId, k -> new HashSet<>());
-        studentsIds.add(studentId);
-        System.out.println("Student is signed up now");
-    }
-
-    @Override
-    public void setAutoCheckService(AutoCheckService autoCheckService) {
-        this.autoCheckService = autoCheckService;
-    }
-
-    @Override
-    public void setEducationalMaterialService(EducationalMaterialService educationalMaterialService) {
-        this.educationalMaterialService = educationalMaterialService;
-    }
-
-    @Override
-    public void setAccountService(AccountService accountService) {
-        this.accountService = accountService;
-    }
-
-
-
-
-    @Override
-    public void setStartProgress(UUID courseId,
-                                 UUID studentId) {
-        Map<UUID, List<UUID>> studentProgress = progressStorage.computeIfAbsent(studentId, k -> new HashMap<>());
-        List<UUID> progressInSteps = new ArrayList<>();
-        studentProgress.put(courseId, progressInSteps);
-        System.out.println("Progress is initialized");
+                           UUID studentId) throws MissingResourceException {
+        if(!courseRepository.existsById(courseId)){
+            throw new MissingResourceException("Course not found",
+                    "Course",
+                    courseId.toString());
+        }
+        if(!studentRepository.existsById(studentId)){
+            throw new MissingResourceException("Student not found",
+                    "Student",
+                    studentId.toString());
+        }
+        Course course = courseRepository.getOne(courseId);
+        Student student = studentRepository.getOne(studentId);
+        course.getStudents().add(student);
+        paymentService.payForCourse(student,course); //simplification
+        courseRepository.save(course);
+        studentRepository.save(student);
     }
 
     @Override
     public void makePassedEducationalStep(UUID courseId,
                                           UUID studentId,
-                                          UUID educationalStepId) {
-        Map<UUID, List<UUID>> studentProgress = progressStorage.get(studentId);
-        studentProgress.get(courseId).add(educationalStepId);
-        CourseAction courseAction = buildCourseAction(courseId, studentId, ActionType.SEEN, 0);
-        timedActionsStorage.add(courseAction);
-        System.out.println("Educational step is passed");
+                                          UUID educationalStepId) throws MissingResourceException {
+        if(!courseRepository.existsById(courseId)){
+            throw new MissingResourceException("Course not found",
+                    "Course",
+                    courseId.toString());
+        }
+        if(!studentRepository.existsById(studentId)){
+            throw new MissingResourceException("Student not found",
+                    "Student",
+                    studentId.toString());
+        }
+        if(!educationalStepRepository.existsById(educationalStepId)){
+            throw new MissingResourceException("Educational step not found",
+                    "EducationalStep",
+                    educationalStepId.toString());
+        }
+        Course course = courseRepository.getOne(courseId);
+        Student student = studentRepository.getOne(studentId);
+        EducationalStep educationalStep = educationalStepRepository.getOne(educationalStepId);
+
+        StudentProgressItem studentProgressItem = StudentProgressItem.builder()
+                .student(student)
+                .course(course)
+                .passedEducationalStep(educationalStep)
+                .passedTestStep(null)
+                .chosenOption(null).build();
+        studentProgressItemRepository.save(studentProgressItem);
     }
 
     @Override
     public void makeProcessedTestStep(UUID courseId,
                                       UUID studentId,
                                       UUID testStepId,
-                                      TestAnswer chosenTestAnswer) {
-        TestStep testStep = educationalMaterialService.getTestStepById(testStepId);
-        Map<UUID, List<UUID>> studentProgress = progressStorage.get(studentId);
-        ActionType receivedActionType = autoCheckService.checkTestTask(testStep, chosenTestAnswer);
-        CourseAction courseAction = buildCourseAction(courseId, studentId, receivedActionType, testStep.getScore());
-        timedActionsStorage.add(courseAction);
-        if (receivedActionType == ActionType.PASSED) {
-            studentProgress.get(courseId).add(testStepId);
+                                      TestStepOptionDTO chosenAnswer) {
+        if(!courseRepository.existsById(courseId)){
+            throw new MissingResourceException("Course not found",
+                    "Course",
+                    courseId.toString());
         }
-    }
-
-    @Override
-    public Step getCurrentStep(UUID courseId,
-                               UUID studentId) {
-//        Will be implemented in next commit
-        return null;
+        if(!studentRepository.existsById(studentId)){
+            throw new MissingResourceException("Student not found",
+                    "Student",
+                    studentId.toString());
+        }
+        if(!testStepRepository.existsById(testStepId)){
+            throw new MissingResourceException("Test step not found",
+                    "TestStep",
+                    testStepId.toString());
+        }
+        if(!testStepOptionRepository.existsById(chosenAnswer.getId())){
+            throw new MissingResourceException("Test step option not found",
+                    "TestStepOption",
+                    chosenAnswer.getId().toString());
+        }
+        Course course = courseRepository.getOne(courseId);
+        Student student = studentRepository.getOne(studentId);
+        TestStep testStep = testStepRepository.getOne(testStepId);
+        TestStepOption chosenTestOption = testStepOptionRepository.getOne(chosenAnswer.getId());
+        ActionType actionType = autoCheckService.checkTestTask(testStep,chosenTestOption);
+        if(actionType == ActionType.PASSED){
+            StudentProgressItem studentProgressItem = StudentProgressItem.builder()
+                    .student(student)
+                    .course(course)
+                    .passedTestStep(testStep)
+                    .chosenOption(chosenTestOption)
+                    .passedEducationalStep(null)
+                    .build();
+            studentProgressItemRepository.save(studentProgressItem);
+        }
     }
 
     @Override
@@ -102,37 +141,4 @@ public class CourseProgressServiceImpl implements CourseProgressService {
                 ",! You've done well. You've already finished course " + course.getTitle();
         System.out.println(congratulation);
     }
-
-
-    @Override
-    public CourseAction buildCourseAction(UUID courseId,
-                                          UUID studentId,
-                                          ActionType actionType,
-                                          Integer score) {
-        ZonedDateTime actionTime = ZonedDateTime.now();
-        switch (actionType) {
-            case SEEN:
-                return new CourseAction(courseId,
-                        studentId,
-                        actionType,
-                        actionTime,
-                        0);
-            case TRIED:
-                return new CourseAction(courseId,
-                        studentId,
-                        actionType,
-                        actionTime,
-                        0);
-            case PASSED:
-                return new CourseAction(courseId,
-                        studentId,
-                        actionType,
-                        actionTime,
-                        score);
-            default:
-                throw new RuntimeException("No such a case for actionType:" + actionType.name());
-        }
-    }
-
-
 }

@@ -31,7 +31,7 @@ public class TestStep implements Step {
     private URI descriptionUri;
 
     @OneToMany(mappedBy = "testStep",cascade = CascadeType.ALL)
-    private Collection<TestAnswer> answers;
+    private Collection<TestStepOption> answers;
 
     @Column
     private int score;

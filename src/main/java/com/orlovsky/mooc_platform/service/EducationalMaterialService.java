@@ -1,14 +1,9 @@
 package com.orlovsky.mooc_platform.service;
 
 
-import com.orlovsky.mooc_platform.dto.CourseDTO;
-import com.orlovsky.mooc_platform.dto.EducationalStepDTO;
-import com.orlovsky.mooc_platform.dto.TestStepDTO;
+import com.orlovsky.mooc_platform.dto.*;
 import com.orlovsky.mooc_platform.model.*;
 
-import java.net.URI;
-import java.time.Duration;
-import java.util.Collection;
 import java.util.List;
 import java.util.MissingResourceException;
 import java.util.UUID;
@@ -39,7 +34,7 @@ public interface EducationalMaterialService {
     void addTestStep(UUID courseId,
                      TestStepDTO testStepDTO);
 
-    void addTestStepAnswer(UUID courseId, UUID testStepId, TestAnswer body);
+    void addTestStepAnswer(UUID courseId, UUID testStepId, TestStepOptionRequestDTO body);
 
     void setCourseStatus(UUID courseId, CourseStatus courseStatus);
 

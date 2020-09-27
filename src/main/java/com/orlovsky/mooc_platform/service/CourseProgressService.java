@@ -1,21 +1,14 @@
 package com.orlovsky.mooc_platform.service;
 
-import com.orlovsky.mooc_platform.model.*;
+import com.orlovsky.mooc_platform.dto.TestStepOptionDTO;
+import com.orlovsky.mooc_platform.model.Course;
+import com.orlovsky.mooc_platform.model.Student;
 
 import java.util.UUID;
 
 public interface CourseProgressService {
-    void setAutoCheckService(AutoCheckService autoCheckService);
-
-    void setEducationalMaterialService(EducationalMaterialService educationalMaterialService);
-
-    void setAccountService(AccountService accountService);
-
     void signUpUser(UUID courseId,
                     UUID studentId);
-
-    void setStartProgress(UUID courseId,
-                          UUID studentId);
 
     void makePassedEducationalStep(UUID courseId,
                                    UUID studentId,
@@ -24,16 +17,9 @@ public interface CourseProgressService {
     void makeProcessedTestStep(UUID courseId,
                                UUID studentId,
                                UUID testStepId,
-                               TestAnswer chosenTestAnswer);
+                               TestStepOptionDTO chosenAnswer);
 
-    Step getCurrentStep(UUID courseId,
-                        UUID studentId);
 
     void congratulateStudent(Student student,
                              Course course);
-
-    CourseAction buildCourseAction(UUID courseId,
-                                   UUID studentId,
-                                   ActionType actionType,
-                                   Integer score);
 }
