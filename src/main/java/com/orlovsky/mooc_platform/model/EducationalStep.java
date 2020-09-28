@@ -8,6 +8,7 @@ import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import java.net.URI;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -31,5 +32,8 @@ public class EducationalStep implements Step {
 
     @Column
     private int position;
+
+    @OneToMany(mappedBy = "passedEducationalStep",cascade = CascadeType.ALL)
+    private List<StudentProgressItem> studentProgressItems;
 }
 

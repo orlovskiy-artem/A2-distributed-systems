@@ -9,6 +9,7 @@ import org.hibernate.annotations.Type;
 import javax.persistence.*;
 import java.net.URI;
 import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -38,4 +39,7 @@ public class TestStep implements Step {
 
     @Column
     private int position;
+
+    @OneToMany(mappedBy = "passedTestStep",cascade = CascadeType.ALL)
+    private List<StudentProgressItem> studentProgressItems;
 }
