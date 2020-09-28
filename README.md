@@ -1,4 +1,4 @@
-###AccountController
+### AccountController
 POST /students \
 GET /students  \
 GET /students/{id} \
@@ -10,12 +10,12 @@ GET /authors/{id} \
 PUT /authors/{id} \
 DELETE /authors/{id}
 
-###CourseProgressController
+### CourseProgressController
 POST /progress/{courseId}/students/{studentId} \
 POST /progress/{courseId}/students/{studentId}/steps/educational-steps/{educationalStepId} \
 POST /progress/{courseId}/students/{studentId}/steps/test-steps/{testStepId}
 
-###EducationalMaterialController
+### EducationalMaterialController
 GET /courses/{id}
 GET /courses/{id}/steps/educational-steps \
 GET /courses/{id}/steps/test-steps \
