@@ -24,9 +24,9 @@ public class AccountController {
 
     // CRUD for students
     @PostMapping(value = "/students")
-    public ResponseEntity<?> createStudent(@RequestBody StudentDTO body){
-        accountService.signUpStudent(body);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+    public ResponseEntity<Student> createStudent(@RequestBody StudentDTO body){
+        Student student = accountService.signUpStudent(body);
+        return new ResponseEntity<>(student,HttpStatus.CREATED);
     }
 
     @GetMapping(value = "/students")
@@ -67,8 +67,8 @@ public class AccountController {
     // CRUD for authors
     @PostMapping(value = "/authors")
     public ResponseEntity<?> createAuthor(@RequestBody AuthorDTO body){
-        accountService.signUpAuthor(body);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+        Author author = accountService.signUpAuthor(body);
+        return new ResponseEntity<>(author,HttpStatus.CREATED);
     }
 
     @GetMapping(value = "/authors")

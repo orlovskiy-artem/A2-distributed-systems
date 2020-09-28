@@ -31,11 +31,11 @@ public class EducationalMaterialServiceImpl implements EducationalMaterialServic
     // CRUD
     // Create
     @Override
-    public void createEmptyCourse(CourseDTO courseDTO) {
+    public Course createEmptyCourse(CourseDTO courseDTO) {
         Course course = CourseMapper.INSTANCE.toEntity(courseDTO);
         course.setStatus(CourseStatus.IN_DEVELOPMENT);
         System.out.println(course);
-        courseRepository.save(course);
+        return courseRepository.save(course);
     }
 
     // Read
@@ -126,7 +126,7 @@ public class EducationalMaterialServiceImpl implements EducationalMaterialServic
     }
 
     @Override
-    public void addEducationalStep(UUID courseId, EducationalStepDTO educationalStepDTO) {
+    public EducationalStep addEducationalStep(UUID courseId, EducationalStepDTO educationalStepDTO) {
         if(!courseRepository.existsById(courseId)){
             throw new MissingResourceException("Course not found",
                     "Course",
@@ -137,14 +137,15 @@ public class EducationalMaterialServiceImpl implements EducationalMaterialServic
         EducationalStep educationalStep = EducationalStepMapper.INSTANCE.toEntity(educationalStepDTO);
         educationalStep.setPosition(numberOfSteps+1);
         educationalStep.setCourse(course);
-        educationalStepRepository.save(educationalStep);
+        EducationalStep educationalStepSaved = educationalStepRepository.save(educationalStep);
         course.setNumberOfSteps(course.getNumberOfSteps()+1);
         course.getEducationalSteps().add(educationalStep);
         courseRepository.save(course);
+        return educationalStepSaved;
     }
 
     @Override
-    public void addTestStep(UUID courseId,
+    public TestStep addTestStep(UUID courseId,
                             TestStepDTO testStepDTO) {
         if(!courseRepository.existsById(courseId)){
             throw new MissingResourceException("Course not found",
@@ -160,11 +161,12 @@ public class EducationalMaterialServiceImpl implements EducationalMaterialServic
         course.setNumberOfSteps(course.getNumberOfSteps()+1);
         course.getTestSteps().add(testStepSaved);
         courseRepository.save(course);
+        return testStepSaved;
     }
     @Override
-    public void addTestStepAnswer(UUID courseId,
-                                  UUID testStepId,
-                                  TestStepOptionRequestDTO testStepOptionRequestDTO) throws MissingResourceException{
+    public TestStepOption addTestStepOption(UUID courseId,
+                                            UUID testStepId,
+                                            TestStepOptionRequestDTO testStepOptionRequestDTO) throws MissingResourceException{
         if(!testStepRepository.existsById(testStepId)){
             throw new MissingResourceException("Test step not found",
                     "Test step",
@@ -174,8 +176,9 @@ public class EducationalMaterialServiceImpl implements EducationalMaterialServic
         TestStepOption testStepOption = TestStepOptionRequestMapper.INSTANCE.toEntity(testStepOptionRequestDTO);
         testStepOption.setTestStep(testStep);
         testStep.getAnswers().add(testStepOption);
-        testAnswerRepository.save(testStepOption);
+        TestStepOption testStepOptionSaved = testAnswerRepository.save(testStepOption);
         testStepRepository.save(testStep);
+        return testStepOptionSaved;
     }
 
     @Override

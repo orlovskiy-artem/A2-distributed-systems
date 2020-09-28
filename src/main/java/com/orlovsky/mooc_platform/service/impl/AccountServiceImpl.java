@@ -25,17 +25,17 @@ public class AccountServiceImpl implements AccountService {
     // CRUD
     // Create
     @Override
-    public void signUpStudent(StudentDTO studentDTO) {
+    public Student signUpStudent(StudentDTO studentDTO) {
         Student student = StudentMapper.INSTANCE.toEntity(studentDTO);
         System.out.println(studentDTO);
         System.out.println(student);
-        studentRepository.save(student);
+        return studentRepository.save(student);
     }
 
     @Override
-    public void signUpAuthor(AuthorDTO authorDTO) {
+    public Author signUpAuthor(AuthorDTO authorDTO) {
         Author author = AuthorMapper.INSTANCE.toEntity(authorDTO);
-        authorRepository.save(author);
+        return authorRepository.save(author);
     }
 
     // Read

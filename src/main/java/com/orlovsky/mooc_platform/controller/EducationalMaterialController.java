@@ -25,9 +25,9 @@ public class EducationalMaterialController {
     // CRUD
     // Create
     @PostMapping
-    public ResponseEntity<?> createCourse(@RequestBody CourseDTO body){
-        educationalMaterialService.createEmptyCourse(body);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+    public ResponseEntity<Course> createCourse(@RequestBody CourseDTO body){
+        Course course = educationalMaterialService.createEmptyCourse(body);
+        return new ResponseEntity<>(course,HttpStatus.CREATED);
     }
 
     // Read
@@ -116,23 +116,23 @@ public class EducationalMaterialController {
         }
     }
     @PostMapping(value = "/{id}/steps/test-steps")
-    public ResponseEntity<?> addTestStep(@PathVariable(name = "id") UUID courseId,
+    public ResponseEntity<TestStep> addTestStep(@PathVariable(name = "id") UUID courseId,
                                          @RequestBody TestStepDTO body){
         try{
-            educationalMaterialService.addTestStep(courseId, body);
-            return new ResponseEntity<>(HttpStatus.OK);
+            TestStep testStep = educationalMaterialService.addTestStep(courseId, body);
+            return new ResponseEntity<>(testStep,HttpStatus.OK);
         } catch (MissingResourceException e){
             return new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
         }
     }
 
-    @PostMapping(value = "/{courseId}/steps/test-steps/{testStepId}/answers")
-    public ResponseEntity<?> addTestStepAnswer(@PathVariable(name = "courseId") UUID courseId,
+    @PostMapping(value = "/{courseId}/steps/test-steps/{testStepId}/answers",consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<TestStepOption> addTestStepOption(@PathVariable(name = "courseId") UUID courseId,
                                                @PathVariable(name = "testStepId") UUID testStepId,
                                                @RequestBody TestStepOptionRequestDTO body){
         try{
-            educationalMaterialService.addTestStepAnswer(courseId, testStepId, body);
-            return new ResponseEntity<>(HttpStatus.OK);
+            TestStepOption testStepOption = educationalMaterialService.addTestStepOption(courseId, testStepId, body);
+            return new ResponseEntity<>(testStepOption,HttpStatus.OK);
         } catch (MissingResourceException e){
             return new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
         }
@@ -140,17 +140,17 @@ public class EducationalMaterialController {
 
 
     @PostMapping(value = "/{id}/steps/educational-steps")
-    public ResponseEntity<?> addEducationalStep(@PathVariable(name = "id") UUID courseId,
+    public ResponseEntity<EducationalStep> addEducationalStep(@PathVariable(name = "id") UUID courseId,
                                                 @RequestBody EducationalStepDTO body){
         try{
-            educationalMaterialService.addEducationalStep(courseId, body);
-            return new ResponseEntity<>(HttpStatus.OK);
+            EducationalStep educationalStep = educationalMaterialService.addEducationalStep(courseId, body);
+            return new ResponseEntity<>(educationalStep,HttpStatus.OK);
         } catch (MissingResourceException e) {
             return new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
         }
     }
 
-    @PatchMapping(value = "/{courseId}/authors/{authorId}")
+    @PostMapping(value = "/{courseId}/authors/{authorId}")
     public ResponseEntity<?> addAuthor(@PathVariable(name = "courseId") UUID courseId,
                                        @PathVariable(name = "authorId") UUID authorId){
         try{

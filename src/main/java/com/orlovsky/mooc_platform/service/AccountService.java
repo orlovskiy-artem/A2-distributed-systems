@@ -9,9 +9,9 @@ import java.util.List;
 import java.util.UUID;
 
 public interface AccountService {
-    void signUpStudent(StudentDTO studentDTO);
+    Student signUpStudent(StudentDTO studentDTO);
 
-    void signUpAuthor(AuthorDTO authorDTO);
+    Author signUpAuthor(AuthorDTO authorDTO);
 
     Student getStudentById(UUID studentId);
 

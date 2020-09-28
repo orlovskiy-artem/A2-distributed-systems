@@ -11,7 +11,7 @@ import java.util.UUID;
 public interface EducationalMaterialService {
     // CRUD
     // Create
-    void createEmptyCourse(CourseDTO courseDTO);
+    Course createEmptyCourse(CourseDTO courseDTO);
 
     // Read
     Course getCourseById(UUID courseId);
@@ -28,13 +28,13 @@ public interface EducationalMaterialService {
 
     void addAuthor(UUID courseId, UUID authorId);
 
-    void addEducationalStep(UUID courseId,
+    EducationalStep addEducationalStep(UUID courseId,
                             EducationalStepDTO educationalStepDTO);
 
-    void addTestStep(UUID courseId,
+    TestStep addTestStep(UUID courseId,
                      TestStepDTO testStepDTO);
 
-    void addTestStepAnswer(UUID courseId, UUID testStepId, TestStepOptionRequestDTO body);
+    TestStepOption addTestStepOption(UUID courseId, UUID testStepId, TestStepOptionRequestDTO body);
 
     void setCourseStatus(UUID courseId, CourseStatus courseStatus);
 
